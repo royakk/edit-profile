@@ -1,8 +1,11 @@
 import React, { useState, useRef,useEffect} from "react";
 import { Stack, Avatar, Button, Grid } from "@mui/material";
 import BasicModal from "./modal";
-import ReactCrop, { getCroppedCanvas } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+// import ReactCrop, { getCroppedCanvas } from 'react-image-crop';
+// import 'react-image-crop/dist/ReactCrop.css';
+import Cropper, { ReactCropperElement } from "react-cropper";
+import "cropperjs/dist/cropper.css";
+
 const Profile = () => {
   const [open, setOpen] = useState(false);
   const [image, setImage] = useState();
@@ -11,107 +14,24 @@ const Profile = () => {
   const [completedCrop, setCompletedCrop] = useState()
   const [output, setOutput] = useState(null);
   const imgRef = useRef(null)
+  const cropperRef = useRef(null);
 
-
+  const onCrop = () => {
+    const cropper = cropperRef.current?.cropper;
+    console.log(cropper.getCroppedCanvas().toDataURL());
+    setOutput(cropper.getCroppedCanvas().toDataURL())
+  };
   const onImageChange = (event) => {
     if (event.target.files && event.target.files[0]) {
       setSrc(URL.createObjectURL(event.target.files[0]));
-      const reader = new FileReader()
-      reader.readAsDataURL(event.target.files[0]);
-      console.log(reader.result)
-      reader.addEventListener('load', (e) => {
-        const data = e.target.result;
-        setImage(data)
-      })
-      
     }
   };
-  useEffect(() => {
-    console.log("image");
-  }, [output]);
-  console.log('completedCrop', getCroppedCanvas)
-//   const openImgEditor = () => {
-//     if (imgRef.current && completedCrop) {
-//       setCompletedCrop(crop); // Set the new value of the crop state
-//       const canvas = getCroppedCanvas(imgRef.current, completedCrop);
-//       canvas.toBlob(blob => {
-//         setImage(URL.createObjectURL(blob));
-//         setOpen(false);
-//       });
-//     }
-//   };
-const canv = () => {
-    if (crop) {
-      const canvas = document.createElement("canvas");
-      const scaleX = image.naturalWidth / image.width;
-      const scaleY = image.naturalHeight / image.height;
-      canvas.width = crop.width;
-      canvas.height = crop.height;
-      const ctx = canvas.getContext("2d");
-
-      ctx.drawImage(
-        image,
-        crop.x * scaleX,
-        crop.y * scaleY,
-        crop.width * scaleX,
-        crop.height * scaleY,
-        0,
-        0,
-        crop.width,
-        crop.height
-      );
-
-      canvas.toBlob((blob) => {
-        // const newImg = document.createElement("img");
-        const url = URL.createObjectURL(blob);
-        console.log('url', url)
-        // newImg.onload = () => {
-        //   // no longer need to read the blob so it's revoked
-        //   URL.revokeObjectURL(url);
-        // };
-      
-        // newImg.src = url;
-        // document.body.appendChild(newImg);
-      });
-      return;
-      const pixelRatio = window.devicePixelRatio;
-      canvas.width = crop.width * pixelRatio;
-      canvas.height = crop.height * pixelRatio;
-      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-      ctx.imageSmoothingQuality = "high";
-  
-      // Load the image using the HTMLImageElement constructor
-      const img = new Image();
-      img.src = image
-      console.log(img)
-      img.onload = () => {
-        ctx.drawImage(
-          img,
-          crop.x * scaleX,
-          crop.y * scaleY,
-          crop.width * scaleX,
-          crop.height * scaleY,
-          0,
-          0,
-          crop.width,
-          crop.height
-        );
-        
-        const base64Image = canvas.toDataURL("image/jpeg");
-  
-        // Add load event listener to ensure image has loaded before setting output
-        const outputImage = new Image();
-        outputImage.onload = () => {
-          setOutput(base64Image);
-        };
-        outputImage.src = base64Image;
-      };
-      img.src = image;
-    }
-    console.log("outtt", output);
-    console.log("crop",crop);
-    setOpen(false);
+ 
+  const openImgEditor = () => {
+   
+    setOpen(false)
   };
+
   return (
     <>
       <Stack
@@ -149,27 +69,24 @@ const canv = () => {
                 </Button>
                 </Grid>
                 <Grid item md={12}>
-                <ReactCrop
-                    crop={crop}
-                    onChange={(percentCrop) => setCrop(percentCrop)}
-                    onComplete={(c) => setCompletedCrop(c)}
-        >
-          <img
+                
+         <Cropper
             src={src}
-
-          />
-        </ReactCrop>
-       
+            style={{ height: 400, width: "100%" }}
+            // Cropper.js options
+            initialAspectRatio={16 / 9}
+            guides={false}
+            crop={onCrop}
+            ref={cropperRef}
+    />
+        
                 </Grid>
                 
-             
-              
-            
             <Grid item md={6}>
               <button onClick={() => setOpen(false)}>Cancel</button>
             </Grid>
             <Grid item md={6}>
-              <button onClick={canv}>sabt</button>
+              <button onClick={openImgEditor}>sabt</button>
             </Grid>
           </Grid>
         </BasicModal>
